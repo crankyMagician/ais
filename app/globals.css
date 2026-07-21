@@ -1,0 +1,142 @@
+:root {
+  --bg: #0b1220;
+  --panel: #111a2c;
+  --panel-2: #16213a;
+  --text: #e6edf7;
+  --muted: #93a1b8;
+  --line: #23304b;
+  --accent: #4ea1ff;
+  --warn: #ffb454;
+  --bad: #ff6470;
+  --ok: #4ecf8d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.topnav .brand {
+  font-weight: 650;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.topnav .links {
+  display: flex;
+  gap: 1.1rem;
+}
+.topnav .links a {
+  color: var(--muted);
+}
+.topnav .links a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 4rem;
+}
+.page h1 {
+  font-size: 1.6rem;
+  line-height: 1.25;
+}
+.page h2 {
+  font-size: 1.2rem;
+  margin-top: 2rem;
+}
+.page p,
+.page li {
+  color: var(--text);
+}
+.muted {
+  color: var(--muted);
+}
+
+.mapwrap {
+  position: relative;
+  height: calc(100vh - 49px);
+  width: 100%;
+}
+.map {
+  position: absolute;
+  inset: 0;
+}
+
+.map-status {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+  z-index: 10;
+  background: rgba(11, 18, 32, 0.85);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.map-status .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.4rem;
+  background: var(--muted);
+}
+.map-status .dot.live {
+  background: var(--ok);
+}
+.map-status .dot.err {
+  background: var(--bad);
+}
+
+.maplibregl-popup-content {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  padding: 0.6rem 0.75rem;
+}
+.maplibregl-popup-tip {
+  border-top-color: var(--panel) !important;
+  border-bottom-color: var(--panel) !important;
+}
+.popup-name {
+  font-weight: 650;
+  margin-bottom: 0.2rem;
+}
+.popup-row {
+  color: var(--muted);
+}
