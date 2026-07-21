@@ -88,6 +88,13 @@ export default function EventsMap({
           map.getCanvas().style.cursor = "";
         });
       }
+
+      const all = [...open, ...closed];
+      if (all.length) {
+        const bounds = new maplibregl.LngLatBounds();
+        for (const e of all) bounds.extend([e.lastPos.lon, e.lastPos.lat]);
+        map.fitBounds(bounds, { padding: 60, maxZoom: 5, duration: 0 });
+      }
     });
 
     return () => map.remove();
