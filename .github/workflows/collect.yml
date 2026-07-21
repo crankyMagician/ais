@@ -1,0 +1,42 @@
+name: collect
+on:
+  schedule:
+    # off-peak minutes; expect 5-30 min drift on top of this
+    - cron: "7,27,47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: collector
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Restore state from data branch tip
+        run: |
+          if git fetch --depth 1 origin data; then
+            git worktree add --detach /tmp/state FETCH_HEAD
+          else
+            echo "no data branch yet: cold start"
+            mkdir -p /tmp/state
+          fi
+      - name: Collect, detect, publish
+        run: npx tsx pipeline/src/run.ts --state /tmp/state --out /tmp/out --window-min 10
+        env:
+          AISSTREAM_API_KEY: ${{ secrets.AISSTREAM_API_KEY }}
+      - name: Push data branch (single orphan commit)
+        run: bash pipeline/scripts/push-data.sh /tmp/out
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}

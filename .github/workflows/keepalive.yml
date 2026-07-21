@@ -1,0 +1,20 @@
+name: keepalive
+# GitHub disables cron workflows after 60 days without repo activity. The
+# collector's data commits normally reset that clock; this is the backstop.
+on:
+  schedule:
+    - cron: "13 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/collect.yml/enable"
+          gh api -X PUT "repos/${{ github.repository }}/actions/workflows/keepalive.yml/enable"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
