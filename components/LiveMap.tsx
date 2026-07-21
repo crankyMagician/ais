@@ -98,8 +98,8 @@ export default function LiveMap() {
     const map: MLMap = new maplibregl.Map({
       container: containerRef.current,
       style: STYLE_URL,
-      center: [24.5, 59.6],
-      zoom: 6,
+      center: [15, 35],
+      zoom: 2,
     });
     map.addControl(new maplibregl.NavigationControl(), "top-right");
 
@@ -272,7 +272,7 @@ export default function LiveMap() {
           source: src,
           layout: {
             "icon-image": icon,
-            "icon-size": ["interpolate", ["linear"], ["zoom"], 4, 0.45, 9, 0.9],
+            "icon-size": ["interpolate", ["linear"], ["zoom"], 1, 0.3, 4, 0.45, 9, 0.9],
             "icon-rotate": ["get", "rotation"],
             "icon-rotation-alignment": "map",
             "icon-allow-overlap": true,
@@ -327,7 +327,7 @@ export default function LiveMap() {
         {snapshotInfo ? (
           <>
             <br />
-            <span>Watch regions: {snapshotInfo}</span>
+            <span>Snapshot (gray): {snapshotInfo}</span>
           </>
         ) : null}
       </div>

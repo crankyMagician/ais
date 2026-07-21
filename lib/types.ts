@@ -94,6 +94,7 @@ export interface RunRecord {
   endedAt: number;
   windowSec: number;
   connectedSec: number;
+  sources?: Record<string, number>; // connected seconds per source
   msgCount: number;
   regions: Record<
     string,

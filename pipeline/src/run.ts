@@ -4,11 +4,13 @@ import { fileURLToPath } from "node:url";
 import type { DarkEvent, Manifest } from "../../lib/types";
 import {
   collectWindow,
+  emptyResult,
   foldMessage,
   type CollectResult,
 } from "./lib/aisstream";
+import { collectKystverket } from "./lib/kystverket";
 import { makeCounter } from "./collect";
-import { toAisstreamBoxes } from "./config/regions";
+import { WORLD_BOXES } from "./config/regions";
 import { T } from "./config/thresholds";
 import { updateCoverage } from "./detect/coverage";
 import { assessRun } from "./detect/health";
@@ -41,11 +43,11 @@ async function main(): Promise<void> {
     process.exit(2);
   }
 
-  const apiKey = process.env.AISSTREAM_API_KEY;
-  if (!replayFile && !apiKey) {
-    console.error("AISSTREAM_API_KEY is not set (or use --replay)");
-    process.exit(2);
-  }
+  const apiKey = process.env.AISSTREAM_API_KEY || undefined;
+  if (!replayFile && !apiKey)
+    console.warn(
+      "AISSTREAM_API_KEY not set: collecting from Kystverket only (no global coverage)",
+    );
 
   const zonesFile = fileURLToPath(
     new URL("../data-static/risk-zones.geojson", import.meta.url),
@@ -57,23 +59,34 @@ async function main(): Promise<void> {
   const runId = new Date(startedAt * 1000).toISOString();
   const { counts, onPosition } = makeCounter();
 
-  let result: CollectResult;
+  const result: CollectResult = emptyResult();
+  const windowMs = windowMin * 60000;
+  let sources = { aisstream: 0, kystverket: 0 };
   if (replayFile) {
-    result = { positions: new Map(), statics: new Map(), msgCount: 0, connectedMs: windowMin * 60000 };
     for (const line of fs.readFileSync(replayFile, "utf8").split("\n"))
       if (line.trim()) foldMessage(line, result, startedAt, onPosition);
+    sources = { aisstream: windowMin * 60, kystverket: windowMin * 60 };
   } else {
-    result = await collectWindow({
-      apiKey: apiKey!,
-      boxes: toAisstreamBoxes(),
-      windowMs: windowMin * 60000,
-      onPosition,
-      log: (m) => console.log(m),
-    });
+    const log = (m: string) => console.log(m);
+    const [aisMs, kystMs] = await Promise.all([
+      apiKey
+        ? collectWindow({
+            apiKey,
+            boxes: WORLD_BOXES,
+            windowMs,
+            result,
+            onPosition,
+            log,
+          })
+        : Promise.resolve(0),
+      collectKystverket({ windowMs, result, onPosition, log }),
+    ]);
+    sources = { aisstream: aisMs / 1000, kystverket: kystMs / 1000 };
   }
   const endedAt = Date.now() / 1000;
   console.log(
-    `window done: ${result.msgCount} msgs, ${result.positions.size} vessels, connected ${Math.round(result.connectedMs / 1000)}s/${windowMin * 60}s`,
+    `window done: ${result.msgCount} msgs, ${result.positions.size} vessels, ` +
+      `aisstream ${Math.round(sources.aisstream)}s / kystverket ${Math.round(sources.kystverket)}s of ${windowMin * 60}s`,
   );
 
   const prevRunEnd = state.manifest?.lastRunEnd ?? null;
@@ -82,7 +95,7 @@ async function main(): Promise<void> {
     startedAt,
     endedAt,
     windowSec: windowMin * 60,
-    connectedSec: result.connectedMs / 1000,
+    sources,
     msgCount: result.msgCount,
     counts,
     regionEma: state.regionEma,

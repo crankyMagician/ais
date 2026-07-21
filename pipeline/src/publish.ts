@@ -3,7 +3,7 @@ import type { PipelineState } from "./state/store";
 import { REGIONS } from "./config/regions";
 import { T } from "./config/thresholds";
 
-const SNAPSHOT_ALL_MAX = 30000;
+const SNAPSHOT_ALL_MAX = 50000;
 
 function toSnapshotVessel(v: VesselState): SnapshotVessel {
   return {
@@ -27,17 +27,18 @@ export function buildSnapshots(
   const cutoff = now - T.snapshotMaxAgeMin * 60;
   const byRegion = new Map<string, SnapshotVessel[]>();
   for (const r of REGIONS) byRegion.set(r.name, []);
+  const all: SnapshotVessel[] = []; // includes vessels outside every region
   for (const v of state.vessels.values()) {
     if (v.lastSeen < cutoff) continue;
-    byRegion.get(v.region)?.push(toSnapshotVessel(v));
+    const sv = toSnapshotVessel(v);
+    byRegion.get(v.region)?.push(sv);
+    all.push(sv);
   }
 
   const out = new Map<string, object>();
-  const all: SnapshotVessel[] = [];
   for (const [region, vessels] of byRegion) {
     const snap: RegionSnapshot = { region, generatedAt: now, vessels };
     out.set(`snapshot-${region}.json`, snap);
-    all.push(...vessels);
   }
   const allSnap: RegionSnapshot = {
     region: "all",

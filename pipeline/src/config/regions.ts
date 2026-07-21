@@ -9,6 +9,9 @@ export interface Region {
   name: string;
   label: string;
   bbox: Bbox;
+  // Fed by its own always-on source (not aisstream), so an aisstream outage
+  // does not degrade it.
+  dedicatedFeed?: boolean;
 }
 
 export const REGIONS: Region[] = [
@@ -16,6 +19,13 @@ export const REGIONS: Region[] = [
     name: "baltic",
     label: "Baltic Sea",
     bbox: { latMin: 53.5, latMax: 66.0, lonMin: 9.5, lonMax: 30.5 },
+  },
+  {
+    // after baltic so Baltic proper wins the Skagerrak overlap
+    name: "norway",
+    label: "Norwegian coast",
+    bbox: { latMin: 57.5, latMax: 72.5, lonMin: 3.5, lonMax: 32.0 },
+    dedicatedFeed: true,
   },
   {
     name: "black-sea",
@@ -53,10 +63,11 @@ export function regionOf(lat: number, lon: number): Region | null {
   return null;
 }
 
-// aisstream BoundingBoxes: [[lat, lon], [lat, lon]] corner pairs.
-export function toAisstreamBoxes(): number[][][] {
-  return REGIONS.map((r) => [
-    [r.bbox.latMin, r.bbox.lonMin],
-    [r.bbox.latMax, r.bbox.lonMax],
-  ]);
-}
+// aisstream BoundingBoxes: [[lat, lon], [lat, lon]] corner pairs. We subscribe
+// to the whole world; REGIONS above scope detection, not collection.
+export const WORLD_BOXES: number[][][] = [
+  [
+    [-90, -180],
+    [90, 180],
+  ],
+];

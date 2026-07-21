@@ -96,15 +96,21 @@ export default function WhyPage() {
 
       <h2>Methodology and honest limits</h2>
       <p>
-        The pipeline behind this site samples aisstream.io&apos;s terrestrial
-        feed for about ten minutes every twenty minutes across six watch
-        regions, tracks vessels over time, and opens a &quot;dark event&quot;
-        only when a consistently observed vessel stops reporting for more
-        than 90 effective minutes from a well-covered cell, away from region
-        boundaries, after dead reckoning says it could not simply have sailed
-        out. Time when our own collector was down or a region&apos;s feed was
-        degraded never counts against a vessel, and mass disappearances are
-        treated as receiver outages.
+        The pipeline behind this site collects for about ten minutes every
+        twenty minutes from two sources: aisstream.io&apos;s global
+        crowdsourced terrestrial feed (whole-world subscription) and the
+        Norwegian Coastal Administration&apos;s open feed for the Norwegian
+        coast. Every received vessel appears on the map&apos;s snapshot
+        layer, but dark events are only opened inside seven watch regions
+        where coverage is dense enough to make absence meaningful: the
+        Baltic, the Norwegian coast, the Black Sea, the Eastern
+        Mediterranean, the Persian Gulf, the Gulf of Guinea, and the South
+        China Sea. An event opens only when a consistently observed vessel
+        stops reporting for more than 90 effective minutes from a
+        well-covered cell, away from region boundaries, after dead reckoning
+        says it could not simply have sailed out. Time when our own collector
+        was down or a source was degraded never counts against a vessel, and
+        mass disappearances are treated as receiver outages.
       </p>
       <p>
         Even so: a classification of &quot;possibly deliberate&quot; is an

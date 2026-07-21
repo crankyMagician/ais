@@ -65,6 +65,7 @@ export const runRecordSchema = z.object({
   endedAt: z.number(),
   windowSec: z.number(),
   connectedSec: z.number(),
+  sources: z.record(z.string(), z.number()).optional(),
   msgCount: z.number(),
   regions: z.record(
     z.string(),

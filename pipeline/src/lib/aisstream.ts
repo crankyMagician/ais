@@ -27,7 +27,10 @@ export interface CollectResult {
   positions: Map<string, Observation>; // latest per MMSI
   statics: Map<string, StaticInfo>;
   msgCount: number;
-  connectedMs: number;
+}
+
+export function emptyResult(): CollectResult {
+  return { positions: new Map(), statics: new Map(), msgCount: 0 };
 }
 
 interface Envelope {
@@ -135,38 +138,36 @@ export interface CollectOptions {
   apiKey: string;
   boxes: number[][][];
   windowMs: number;
+  result: CollectResult;
   log?: (msg: string) => void;
   onPosition?: (obs: Observation) => void;
 }
 
-// Streams for windowMs, reconnecting with jitter on drops. Returns the folded
-// latest-per-vessel view; per-message work is O(1) map writes so the read
-// queue never backs up (aisstream disconnects slow consumers).
-export function collectWindow(opts: CollectOptions): Promise<CollectResult> {
+// Streams for windowMs, reconnecting with jitter on drops, folding into the
+// shared result. Per-message work is O(1) map writes so the read queue never
+// backs up (aisstream disconnects slow consumers). Resolves this source's
+// connected ms.
+export function collectWindow(opts: CollectOptions): Promise<number> {
   const log = opts.log ?? (() => {});
-  const result: CollectResult = {
-    positions: new Map(),
-    statics: new Map(),
-    msgCount: 0,
-    connectedMs: 0,
-  };
+  const result = opts.result;
 
   return new Promise((resolve) => {
     const deadline = Date.now() + opts.windowMs;
     let ws: WebSocket | null = null;
+    let connectedMs = 0;
     let connectedSince: number | null = null;
     let settled = false;
 
     function finish() {
       if (settled) return;
       settled = true;
-      if (connectedSince) result.connectedMs += Date.now() - connectedSince;
+      if (connectedSince) connectedMs += Date.now() - connectedSince;
       try {
         ws?.terminate();
       } catch {
         // already closed
       }
-      resolve(result);
+      resolve(connectedMs);
     }
 
     const windowTimer = setTimeout(finish, opts.windowMs);
@@ -201,7 +202,7 @@ export function collectWindow(opts: CollectOptions): Promise<CollectResult> {
 
       const onDrop = (why: string) => {
         if (connectedSince) {
-          result.connectedMs += Date.now() - connectedSince;
+          connectedMs += Date.now() - connectedSince;
           connectedSince = null;
         }
         if (settled) return;

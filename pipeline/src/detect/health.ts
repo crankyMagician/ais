@@ -14,7 +14,7 @@ export function assessRun(input: {
   startedAt: number;
   endedAt: number;
   windowSec: number;
-  connectedSec: number;
+  sources: { aisstream: number; kystverket: number }; // connected seconds each
   msgCount: number;
   counts: RunCounts;
   regionEma: Map<string, number>; // mutated with this run's values
@@ -24,13 +24,17 @@ export function assessRun(input: {
   const newDowntime: DowntimeInterval[] = [];
   const regions: RunRecord["regions"] = {};
 
-  const connectivityBad =
-    input.connectedSec / input.windowSec < T.minConnectedFraction;
+  // Each region's connectivity is judged by the source that feeds it, so an
+  // aisstream outage does not degrade dedicated-feed regions and vice versa.
+  const aisBad = input.sources.aisstream / input.windowSec < T.minConnectedFraction;
+  const kystBad =
+    input.sources.kystverket / input.windowSec < T.minConnectedFraction;
 
   for (const r of REGIONS) {
     const msgs = input.counts.regionMsgs.get(r.name) ?? 0;
     const vessels = input.counts.regionVessels.get(r.name)?.size ?? 0;
     const ema = input.regionEma.get(r.name);
+    const connectivityBad = r.dedicatedFeed ? kystBad : aisBad;
     let isDegraded = connectivityBad;
     let reason = connectivityBad ? "connectivity" : undefined;
     if (!isDegraded && ema !== undefined && ema > 50) {
@@ -74,7 +78,8 @@ export function assessRun(input: {
       startedAt: input.startedAt,
       endedAt: input.endedAt,
       windowSec: input.windowSec,
-      connectedSec: input.connectedSec,
+      connectedSec: Math.max(input.sources.aisstream, input.sources.kystverket),
+      sources: { ...input.sources },
       msgCount: input.msgCount,
       regions,
     },

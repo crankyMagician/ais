@@ -7,12 +7,13 @@ import {
   haversineNm,
   pointInRing,
 } from "../src/lib/geo";
+import { NmeaDecoder } from "../src/lib/nmea";
 import { effectiveAbsenceMin } from "../src/detect/health";
 import { classify } from "../src/detect/classify";
-import { regionOf, toAisstreamBoxes } from "../src/config/regions";
+import { regionOf, WORLD_BOXES } from "../src/config/regions";
 
 function empty(): CollectResult {
-  return { positions: new Map(), statics: new Map(), msgCount: 0, connectedMs: 0 };
+  return { positions: new Map(), statics: new Map(), msgCount: 0 };
 }
 
 describe("aisstream message folding", () => {
@@ -93,6 +94,70 @@ describe("aisstream message folding", () => {
   });
 });
 
+describe("AIVDM decoding (Kystverket feed)", () => {
+  // reference sentences from the gpsd AIVDM documentation
+  it("decodes a Class A position report", () => {
+    const d = new NmeaDecoder();
+    const out = d.decodeLine("!AIVDM,1,1,,B,177KQJ5000G?tO`K>RA1wUbN0TKH,0*5C", 1000);
+    expect(out?.kind).toBe("position");
+    if (out?.kind !== "position") return;
+    expect(out.obs.mmsi).toBe("477553000");
+    expect(out.obs.lat).toBeCloseTo(47.5828, 3);
+    expect(out.obs.lon).toBeCloseTo(-122.3458, 3);
+    expect(out.obs.sog).toBe(0);
+    expect(out.obs.ts).toBe(1000);
+  });
+
+  it("uses the tag-block timestamp when present", () => {
+    const d = new NmeaDecoder();
+    const out = d.decodeLine(
+      "\\s:2573235,c:1784670391*0B\\!BSVDM,1,1,,A,13m7>MPP000HE7`RBWB1Swvt0@B@,0*1E",
+      99,
+    );
+    expect(out?.kind).toBe("position");
+    if (out?.kind !== "position") return;
+    expect(out.obs.ts).toBe(1784670391);
+    expect(out.obs.mmsi.length).toBe(9);
+  });
+
+  it("assembles a multipart type 5 static message", () => {
+    const d = new NmeaDecoder();
+    const first = d.decodeLine(
+      "!AIVDM,2,1,3,B,55P5TL01VIaAL@7WKO@mBplU@<PDhh000000001S;AJ::4A80?4i@E53,0*3E",
+      1000,
+    );
+    expect(first).toBeNull();
+    const out = d.decodeLine("!AIVDM,2,2,3,B,1@0000000000000,2*55", 1001);
+    expect(out?.kind).toBe("static");
+    if (out?.kind !== "static") return;
+    expect(out.info.mmsi).toBe("369190000");
+    expect(out.info.name).toBe("MT.MITCHELL");
+    expect(out.info.callsign).toBe("WDA9674");
+    expect(out.info.imo).toBe(6710932);
+    expect(out.info.dest).toBe("SEATTLE");
+    expect(out.info.draught).toBe(6);
+  });
+
+  it("decodes a Class B position report (type 18)", () => {
+    const d = new NmeaDecoder();
+    const out = d.decodeLine(
+      "!AIVDM,1,1,,A,B52K>;h00Fc>jpUlNV@ikwpUoP06,0*4C",
+      1000,
+    );
+    expect(out?.kind).toBe("position");
+    if (out?.kind !== "position") return;
+    expect(Math.abs(out.obs.lat)).toBeLessThanOrEqual(90);
+    expect(Math.abs(out.obs.lon)).toBeLessThanOrEqual(180);
+  });
+
+  it("ignores junk lines", () => {
+    const d = new NmeaDecoder();
+    expect(d.decodeLine("$GPGGA,junk", 0)).toBeNull();
+    expect(d.decodeLine("garbage", 0)).toBeNull();
+    expect(d.decodeLine("\\c:123*00\\!AIVDM,bad", 0)).toBeNull();
+  });
+});
+
 describe("geo", () => {
   it("haversine: one degree of latitude is 60 nm", () => {
     expect(haversineNm(58, 20, 59, 20)).toBeCloseTo(60, 0);
@@ -130,14 +195,17 @@ describe("regions", () => {
   it("maps positions to watch regions", () => {
     expect(regionOf(58, 20)?.name).toBe("baltic");
     expect(regionOf(26.5, 56)?.name).toBe("persian-gulf");
+    expect(regionOf(62.5, 5.5)?.name).toBe("norway");
+    expect(regionOf(59.9, 10.7)?.name).toBe("baltic"); // Oslo fjord overlap goes to first match
     expect(regionOf(0, -30)).toBeNull();
   });
 
-  it("emits [lat, lon] corner pairs for aisstream", () => {
-    const boxes = toAisstreamBoxes();
-    expect(boxes[0]).toEqual([
-      [53.5, 9.5],
-      [66.0, 30.5],
+  it("subscribes to the whole world on aisstream", () => {
+    expect(WORLD_BOXES).toEqual([
+      [
+        [-90, -180],
+        [90, 180],
+      ],
     ]);
   });
 });
