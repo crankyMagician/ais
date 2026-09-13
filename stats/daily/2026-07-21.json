@@ -1,0 +1,19 @@
+{
+ "date": "2026-07-21",
+ "eventsOpened": 0,
+ "eventsClosed": 0,
+ "openAtEOD": 0,
+ "byRegion": {},
+ "byClass": {
+  "likely-coverage-loss": 0,
+  "possibly-deliberate": 0,
+  "unknown": 0
+ },
+ "byFlag": {},
+ "byTypeCategory": {},
+ "gapHistogram": {},
+ "medianGapMin": null,
+ "observedVessels": 3343,
+ "runCount": 4,
+ "downtimeMin": 0
+}
