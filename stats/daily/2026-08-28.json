@@ -1,0 +1,24 @@
+{
+ "date": "2026-08-28",
+ "eventsOpened": 0,
+ "eventsClosed": 18,
+ "openAtEOD": 255,
+ "byRegion": {},
+ "byClass": {
+  "likely-coverage-loss": 0,
+  "possibly-deliberate": 0,
+  "unknown": 0
+ },
+ "byFlag": {},
+ "byTypeCategory": {},
+ "gapHistogram": {
+  "12-24 h": 6,
+  "1.5-3 h": 5,
+  "3-14 d": 2,
+  "1-3 d": 5
+ },
+ "medianGapMin": 976,
+ "observedVessels": 3446,
+ "runCount": 3,
+ "downtimeMin": 1276
+}

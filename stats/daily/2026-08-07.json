@@ -1,0 +1,50 @@
+{
+ "date": "2026-08-07",
+ "eventsOpened": 169,
+ "eventsClosed": 72,
+ "openAtEOD": 302,
+ "byRegion": {
+  "norway": 169
+ },
+ "byClass": {
+  "likely-coverage-loss": 159,
+  "possibly-deliberate": 0,
+  "unknown": 10
+ },
+ "byFlag": {
+  "232": 1,
+  "244": 1,
+  "245": 1,
+  "257": 112,
+  "258": 25,
+  "259": 19,
+  "310": 1,
+  "316": 1,
+  "352": 1,
+  "585": 2,
+  "586": 4,
+  "982": 1
+ },
+ "byTypeCategory": {
+  "fishing": 15,
+  "cargo": 63,
+  "unknown": 12,
+  "tanker": 1,
+  "tug-special": 35,
+  "other": 12,
+  "high-speed": 11,
+  "passenger": 20
+ },
+ "gapHistogram": {
+  "3-14 d": 24,
+  "12-24 h": 6,
+  "3-6 h": 9,
+  "1.5-3 h": 26,
+  "1-3 d": 4,
+  "6-12 h": 3
+ },
+ "medianGapMin": 386,
+ "observedVessels": 3233,
+ "runCount": 21,
+ "downtimeMin": 1119
+}
