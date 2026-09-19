@@ -1,0 +1,19 @@
+{
+ "date": "2026-09-01",
+ "eventsOpened": 0,
+ "eventsClosed": 0,
+ "openAtEOD": 221,
+ "byRegion": {},
+ "byClass": {
+  "likely-coverage-loss": 0,
+  "possibly-deliberate": 0,
+  "unknown": 0
+ },
+ "byFlag": {},
+ "byTypeCategory": {},
+ "gapHistogram": {},
+ "medianGapMin": null,
+ "observedVessels": 0,
+ "runCount": 7,
+ "downtimeMin": 1335
+}
