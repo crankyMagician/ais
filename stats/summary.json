@@ -1,0 +1,66 @@
+{
+ "generatedAt": 1795875296.145,
+ "windowDays": [
+  7,
+  30,
+  90
+ ],
+ "totals": {
+  "7": {
+   "eventsOpened": 0,
+   "byClass": {
+    "likely-coverage-loss": 0,
+    "possibly-deliberate": 0,
+    "unknown": 0
+   },
+   "byRegion": {},
+   "byFlag": {},
+   "byTypeCategory": {},
+   "gapHistogram": {}
+  },
+  "30": {
+   "eventsOpened": 0,
+   "byClass": {
+    "likely-coverage-loss": 0,
+    "possibly-deliberate": 0,
+    "unknown": 0
+   },
+   "byRegion": {},
+   "byFlag": {},
+   "byTypeCategory": {},
+   "gapHistogram": {}
+  },
+  "90": {
+   "eventsOpened": 48,
+   "byClass": {
+    "likely-coverage-loss": 38,
+    "possibly-deliberate": 1,
+    "unknown": 9
+   },
+   "byRegion": {
+    "norway": 48
+   },
+   "byFlag": {
+    "109": 3,
+    "219": 1,
+    "257": 31,
+    "258": 4,
+    "259": 6,
+    "310": 1,
+    "586": 2
+   },
+   "byTypeCategory": {
+    "passenger": 8,
+    "other": 3,
+    "high-speed": 3,
+    "cargo": 15,
+    "tug-special": 9,
+    "fishing": 5,
+    "unknown": 5
+   },
+   "gapHistogram": {
+    "1.5-3 h": 16
+   }
+  }
+ }
+}
